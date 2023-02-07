@@ -1,6 +1,6 @@
 XC32PATH=/opt/microchip/xc32/v4.21/bin
 HARMONYPATH=
-NU32PATH=/home/marno/Classes/Winter23/Mechatronics/Project/Code/nu32dip
+NU32PATH=/home/marno/Classes/Winter23/Mechatronics/Project/Code/Intro_Mechatronics/nu32dip
 PORT=/dev/ttyUSB0
 TERMEMU=screen
 
