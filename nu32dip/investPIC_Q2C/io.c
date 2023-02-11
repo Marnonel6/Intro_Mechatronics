@@ -1,33 +1,7 @@
-#include "helper.h"
+#include "io.h"
 #include "nu32dip.h" 
 #include <stdio.h> 
 
-/******************************************************************************
- * HELPER FUNCTIONS   ==SecA.4.2==
- ******************************************************************************/
-
-/* calculateGrowth
- *
- * This optimistically-named function fills the array with the investment 
- * value over the years, given the parameters in *invp.  
- */
-void calculateGrowth(Investment *invp) {
-
-  int i;
-
-  // for loop ==SecA.4.13==
-  for (i = 1; i <= invp->years; i= i + 1) {   // relational operators ==SecA.4.10==
-                                              // struct access ==SecA.4.4==
-    invp->invarray[i] = invp->growth * invp->invarray[i-1]; 
-  }
-} // ***** END calculateGrowth *****
-
-
-/* getUserInput
- * 
- * This reads the user's input into the struct pointed at by invp, 
- * and returns TRUE (1) if the input is valid, FALSE (0) if not.
- */
 int getUserInput(Investment *invp) {
 
   int valid;       // int used as a boolean ==SecA.4.10==
@@ -40,17 +14,6 @@ int getUserInput(Investment *invp) {
 //   scanf("%lf %lf %d", &(invp->inv0), &(invp->growth), &(invp->years));
   sscanf(message, "%lf %lf %d", &(invp->inv0), &(invp->growth), &(invp->years));
 
-//   char data[30];
-//   sprintf(data,"%10.2f\r\n",invp->inv0);
-//   NU32DIP_WriteUART1(data);
-//   sprintf(data,"%10.2f\r\n",invp->growth);
-//   NU32DIP_WriteUART1("\r\n");
-//   NU32DIP_WriteUART1(data);
-//   sprintf(data,"%10.2f\r\n",invp->years);
-//   NU32DIP_WriteUART1("\r\n");
-//   NU32DIP_WriteUART1(data);
-//   NU32DIP_WriteUART1("\r\n");
-  // logical operators ==SecA.4.11==
   valid = (invp->inv0 > 0) && (invp->growth > 0) &&
     (invp->years > 0) && (invp->years <= MAX_YEARS);
 //   printf("Valid input?  %d\r\n",valid);
@@ -66,14 +29,6 @@ int getUserInput(Investment *invp) {
   return(valid);
 } // ***** END getUserInput *****
 
-
-/* sendOutput
- *
- * This function takes the array of investment values (a pointer to the first
- * element, which is a double) and the number of years (an int).  We could
- * have just passed a pointer to the entire investment record, but we decided 
- * to demonstrate some different syntax.
- */
 void sendOutput(double *arr, int yrs) {
 
   int i;

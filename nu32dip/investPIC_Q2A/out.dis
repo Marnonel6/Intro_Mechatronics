@@ -7776,11 +7776,8 @@ void calculateGrowth(Investment *invp) {
 9d00e34c:	00000000 	nop
 
 9d00e350 <getUserInput>:
-/* getUserInput
- * 
- * This reads the user's input into the struct pointed at by invp, 
- * and returns TRUE (1) if the input is valid, FALSE (0) if not.
- */
+
+
 int getUserInput(Investment *invp) {
 9d00e350:	27bdff08 	addiu	sp,sp,-248
 9d00e354:	afbf00f4 	sw	ra,244(sp)
@@ -7789,7 +7786,7 @@ int getUserInput(Investment *invp) {
   int valid;       // int used as a boolean ==SecA.4.10==
   char message[MAX_MESSAGE_LENGTH];
 
-  // I/O functions in stdio.h ==SecA.4.14==
+// Changed Code
 //   printf("Enter investment, growth rate, number of yrs (up to %d): ",MAX_YEARS);
   NU32DIP_WriteUART1("Enter investment, growth rate, number of yrs (up to 100):\r\n"); // send message back
 9d00e360:	3c049d00 	lui	a0,0x9d00
@@ -7809,10 +7806,7 @@ int getUserInput(Investment *invp) {
 9d00e38c:	24a574cc 	addiu	a1,a1,29900
 9d00e390:	0f404af6 	jal	9d012bd8 <_dsscanf_cdeEfFgGnopuxX>
 9d00e394:	27a40018 	addiu	a0,sp,24
-//   NU32DIP_WriteUART1("\r\n");
-//   NU32DIP_WriteUART1(data);
-//   NU32DIP_WriteUART1("\r\n");
-  // logical operators ==SecA.4.11==
+
   valid = (invp->inv0 > 0) && (invp->growth > 0) &&
     (invp->years > 0) && (invp->years <= MAX_YEARS);
 9d00e398:	00003025 	move	a2,zero
@@ -7836,6 +7830,7 @@ int getUserInput(Investment *invp) {
 9d00e3dc:	24060001 	li	a2,1
 //   printf("Valid input?  %d\r\n",valid);
   char val[10];
+  // Changed Code
   sprintf(val,"Valid input? %d\r\n",valid);
 9d00e3e0:	00003025 	move	a2,zero
 9d00e3e4:	3c059d00 	lui	a1,0x9d00
@@ -7846,9 +7841,9 @@ int getUserInput(Investment *invp) {
 9d00e3f4:	0f403aaa 	jal	9d00eaa8 <NU32DIP_WriteUART1>
 9d00e3f8:	27a400e0 	addiu	a0,sp,224
 
-  // if-else ==SecA.4.12==
   if (!valid) { // ! is logical NOT ==SecA.4.11== 
     // printf("Invalid input; exiting.\n");
+    // Changed Code
     NU32DIP_WriteUART1("Invalid input; exiting.\r\n");
 9d00e3fc:	3c049d00 	lui	a0,0x9d00
 9d00e400:	0f403aaa 	jal	9d00eaa8 <NU32DIP_WriteUART1>
@@ -7875,11 +7870,8 @@ int getUserInput(Investment *invp) {
 9d00e438:	24020001 	li	v0,1
 
 9d00e43c <sendOutput>:
- * This function takes the array of investment values (a pointer to the first
- * element, which is a double) and the number of years (an int).  We could
- * have just passed a pointer to the entire investment record, but we decided 
- * to demonstrate some different syntax.
- */
+
+
 void sendOutput(double *arr, int yrs) {
 9d00e43c:	27bdff68 	addiu	sp,sp,-152
 9d00e440:	afbf0094 	sw	ra,148(sp)
@@ -7889,11 +7881,11 @@ void sendOutput(double *arr, int yrs) {
 9d00e450:	afb00084 	sw	s0,132(sp)
 9d00e454:	00808025 	move	s0,a0
 9d00e458:	00a09025 	move	s2,a1
-
   int i;
   char outstring[100];      // defining a string ==SecA.4.9==
 
 //   printf("\nRESULTS:\r\n");
+  // Changed Code
   NU32DIP_WriteUART1("\r\nRESULTS:\r\n\r\n");
 9d00e45c:	3c049d00 	lui	a0,0x9d00
 9d00e460:	0f403aaa 	jal	9d00eaa8 <NU32DIP_WriteUART1>
@@ -7902,6 +7894,7 @@ void sendOutput(double *arr, int yrs) {
 9d00e468:	06400011 	bltz	s2,9d00e4b0 <sendOutput+0x74>
 9d00e46c:	26520001 	addiu	s2,s2,1
 9d00e470:	00008825 	move	s1,zero
+    // Changed Code
     sprintf(outstring,"Year %3d:  %10.2f\r\n",i,arr[i]); 
 9d00e474:	3c139d00 	lui	s3,0x9d00
 9d00e478:	26737518 	addiu	s3,s3,29976
@@ -7914,6 +7907,7 @@ void sendOutput(double *arr, int yrs) {
 9d00e494:	0f404ae2 	jal	9d012b88 <_dsprintf_cdeEfFgGnopuxX>
 9d00e498:	27a40018 	addiu	a0,sp,24
     // printf("%s",outstring);
+    // Changed Code
     NU32DIP_WriteUART1(outstring);
 9d00e49c:	0f403aaa 	jal	9d00eaa8 <NU32DIP_WriteUART1>
 9d00e4a0:	27a40018 	addiu	a0,sp,24
@@ -7923,6 +7917,7 @@ void sendOutput(double *arr, int yrs) {
 9d00e4ac:	26100008 	addiu	s0,s0,8
   }
 //   printf("\n");
+  // Changed Code
   NU32DIP_WriteUART1("\r\n");
 9d00e4b0:	3c049d00 	lui	a0,0x9d00
 9d00e4b4:	0f403aaa 	jal	9d00eaa8 <NU32DIP_WriteUART1>

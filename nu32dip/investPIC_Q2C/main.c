@@ -1,23 +1,7 @@
-/******************************************************************************
- * PROGRAM COMMENTS (PURPOSE, HISTORY)
- ******************************************************************************/
-
-/*
- * invest.c
- *
- * This program takes an initial investment amount, an expected annual
- * return rate, and the number of years, and calculates the growth of
- * the investment.  The main point of this program, though, is to
- * demonstrate some C syntax.  
- */
-
 #include <stdio.h>      // input/output library
 #include "nu32dip.h"          // constants, funcs for startup and UART
-#include "helper.h"
-
-/******************************************************************************
- * MAIN FUNCTION   ==SecA.4.2==
- ******************************************************************************/
+#include "calculate.h"
+#include "io.h"
 
 int main(void) {
   
