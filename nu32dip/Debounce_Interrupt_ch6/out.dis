@@ -646,9 +646,9 @@ void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
 9d007698:	00008025 	move	s0,zero
 9d00769c:	40904800 	mtc0	s0,c0_count
 9d0076a0:	000000c0 	ehb
-  while(_CP0_GET_COUNT() < 10000000/2) { ; } // delay for 10 M core ticks, 10 ms to wait for bouncing to stop
-9d0076a4:	3c10004c 	lui	s0,0x4c
-9d0076a8:	26104b40 	addiu	s0,s0,19264
+  while(_CP0_GET_COUNT()<24000000*0.01){;} // Wait 10 ms for bouncing to stop
+9d0076a4:	3c100003 	lui	s0,0x3
+9d0076a8:	3610a980 	ori	s0,s0,0xa980
 9d0076ac:	40114800 	mfc0	s1,c0_count
 9d0076b0:	0230882b 	sltu	s1,s1,s0
 9d0076b4:	1620fffd 	bnez	s1,9d0076ac <Ext0ISR+0x5c>
@@ -674,7 +674,7 @@ void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
 9d0076ec:	40904800 	mtc0	s0,c0_count
 9d0076f0:	000000c0 	ehb
 
-    while(_CP0_GET_COUNT() < 10000000) { ; } // delay for 10 M core ticks, 0.25 s
+    while(_CP0_GET_COUNT() < 10000000) {;} // delay for 10 M core ticks, 0.25 s
 9d0076f4:	3c100098 	lui	s0,0x98
 9d0076f8:	36109680 	ori	s0,s0,0x9680
 9d0076fc:	40114800 	mfc0	s1,c0_count
@@ -759,7 +759,7 @@ int main(void) {
 9d0077ec:	ac431060 	sw	v1,4192(v0)
   __builtin_enable_interrupts();  // step 7: enable interrupts
 9d0077f0:	41626020 	ei	v0
-                                  // Connect RD7 (USER button) to INT0 (RD0)
+                                  // Connect RA4 (USER button) to INT0 (RB7)
 
   while(1) {
       ; // do nothing, loop forever

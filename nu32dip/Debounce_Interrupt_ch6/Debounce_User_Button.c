@@ -3,7 +3,7 @@
 void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
 
   _CP0_SET_COUNT(0);
-  while(_CP0_GET_COUNT() < 10000000/2) { ; } // delay for 10 M core ticks, 10 ms to wait for bouncing to stop
+  while(_CP0_GET_COUNT()<24000000*0.01){;} // Wait 10 ms for bouncing to stop
 
   if (!PORTBbits.RB7) // Low thus pressed
   {
@@ -11,7 +11,7 @@ void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
     NU32DIP_YELLOW = 0;
     _CP0_SET_COUNT(0);
 
-    while(_CP0_GET_COUNT() < 10000000) { ; } // delay for 10 M core ticks, 0.25 s
+    while(_CP0_GET_COUNT() < 10000000) {;} // delay for 10 M core ticks, 0.25 s
 
     NU32DIP_GREEN = 1;  // LED1 and LED2 off
     NU32DIP_YELLOW = 1;
@@ -30,7 +30,7 @@ int main(void) {
   IFS0bits.INT0IF = 0;            // step 5: clear the int flag
   IEC0bits.INT0IE = 1;            // step 6: enable INT0 by setting IEC0<3>
   __builtin_enable_interrupts();  // step 7: enable interrupts
-                                  // Connect RD7 (USER button) to INT0 (RD0)
+                                  // Connect RA4 (USER button) to INT0 (RB7)
 
   while(1) {
       ; // do nothing, loop forever
