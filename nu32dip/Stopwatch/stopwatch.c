@@ -34,15 +34,6 @@ void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
         Flag_stopwatch = 0;
         Flag_standby = 1;
     }
-
-    // NU32DIP_GREEN = 0;                  // LED1 and LED2 on
-    // NU32DIP_YELLOW = 0;
-    // _CP0_SET_COUNT(0);
-
-    // while(_CP0_GET_COUNT() < 10000000) {;} // delay for 10 M core ticks, 0.25 s
-
-    // NU32DIP_GREEN = 1;  // LED1 and LED2 off
-    // NU32DIP_YELLOW = 1;
   } // else high thus bounce on release of button. Do nothing
 
   IFS0bits.INT0IF = 0;            // clear interrupt flag IFS0<3>
@@ -84,7 +75,7 @@ int main(void) {
         unsigned int prev_time = _CP0_GET_COUNT();
         while(_CP0_GET_COUNT() - prev_time < (24000000*3)){;} // Wait 3 seunsigned int prev_time = _CP0_GET_COUNT();conds
         NU32DIP_WriteUART1("\r\n\n\n\nPress the USER button to start the timer!\r\n");
-        NU32DIP_WriteUART1("\r\n\nStop the timer at 10 second to WIN the JACKPOT!!!!\r\n");
+        NU32DIP_WriteUART1("\r\n\nStop the timer at 10 seconds to WIN the JACKPOT!!!!\r\n");
         Flag_standby = 0;
       }
       else if (Flag_stopwatch)

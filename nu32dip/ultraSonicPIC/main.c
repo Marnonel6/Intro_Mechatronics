@@ -9,6 +9,9 @@ int main(void){
     init_ultra();
 
     while(1){
+        _CP0_SET_COUNT(0);
+        while(_CP0_GET_COUNT()<24000000*0.1){;} // Wait 100 ms
+
         unsigned int time = read_ultra();
         // Calculate distance
         float distance = ((float)time/2.0)/24000000*SOUND_SPEED;

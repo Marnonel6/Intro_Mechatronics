@@ -2020,9 +2020,9 @@ void __ISR(_EXTERNAL_0_VECTOR, IPL2SOFT) Ext0ISR(void) { // step 1: the ISR
         Flag_stopwatch = 1;
 9d008d2c:	24100001 	li	s0,1
 9d008d30:	af908014 	sw	s0,-32748(gp)
-
-    // NU32DIP_GREEN = 1;  // LED1 and LED2 off
-    // NU32DIP_YELLOW = 1;
+        Flag_stopwatch = 0;
+        Flag_standby = 1;
+    }
   } // else high thus bounce on release of button. Do nothing
 
   IFS0bits.INT0IF = 0;            // clear interrupt flag IFS0<3>
