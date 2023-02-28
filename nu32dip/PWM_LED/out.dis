@@ -606,7 +606,7 @@ int main(void) {
 9d007748:	7c831804 	ins	v1,a0,0x0,0x4
 9d00774c:	a043fb00 	sb	v1,-1280(v0)
 
-  T3CONbits.TCKPS = 0;     // Timer2 prescaler N=1 (1:1)
+  T3CONbits.TCKPS = 0;     // Timer3 prescaler N=1 (1:1)
 9d007750:	3c03bf80 	lui	v1,0xbf80
 9d007754:	94620a00 	lhu	v0,2560(v1)
 9d007758:	7c023104 	ins	v0,zero,0x4,0x3
@@ -615,7 +615,7 @@ int main(void) {
 9d007760:	3c02bf80 	lui	v0,0xbf80
 9d007764:	2404095f 	li	a0,2399
 9d007768:	ac440a20 	sw	a0,2592(v0)
-  TMR3 = 0;                // initial TMR2 count is 0
+  TMR3 = 0;                // initial TMR3 count is 0
 9d00776c:	3c02bf80 	lui	v0,0xbf80
 9d007770:	ac400a10 	sw	zero,2576(v0)
   OC1CONbits.OCM = 0b110;  // PWM mode without fault pin; other OC1CON bits are defaults
@@ -631,7 +631,7 @@ int main(void) {
   OC1R = 0;                // initialize before turning OC1 on; afterward it is read-only
 9d007794:	3c04bf80 	lui	a0,0xbf80
 9d007798:	ac803010 	sw	zero,12304(a0)
-  T3CONbits.ON = 1;        // turn on Timer2
+  T3CONbits.ON = 1;        // turn on Timer3
 9d00779c:	94650a00 	lhu	a1,2560(v1)
 9d0077a0:	24040001 	li	a0,1
 9d0077a4:	7c857bc4 	ins	a1,a0,0xf,0x1
