@@ -1,9 +1,10 @@
 #include "nu32dip.h"            // config bits, constants, funcs for startup and UART
 // include other header files here
 #include "encoder.h"
+#include "utilities.h"
 
 #define BUF_SIZE 200
-#define TICK_TO_DEG 3.888889// 1400/360
+#define TICK_TO_DEG 3.888889// Ticks per degree (1400/360)
 
 int main() 
 {
@@ -15,6 +16,8 @@ int main()
   // in future, initialize modules or peripherals here
   UART2_Startup();
   __builtin_enable_interrupts();
+
+  set_mode(IDLE); //  Set PIC32 into IDLE mode
 
   while(1)
   {
@@ -34,14 +37,14 @@ int main()
         NU32DIP_WriteUART1(buffer);
         break;
       }
-      case 'd': // Read encoder counts 1500/360 Deg
+      case 'd': // Read encoder in degrees
       {
         int count;
         // read encoder count
         WriteUART2("a"); // request the encoder count
         while(!get_encoder_flag()){} // wait for the Pico to respond
         set_encoder_flag(0); // clear the flag so you can read again later
-        count = (int)((double)get_encoder_count()/TICK_TO_DEG); // get the encoder value
+        count = (int)((double)get_encoder_count()/TICK_TO_DEG); // get the encoder value+
 
         sprintf(buffer,"%d\r\n", count); // add two numbers and return
         NU32DIP_WriteUART1(buffer);
@@ -50,6 +53,17 @@ int main()
       case 'e': // Reset encoder count to 0
       {
         WriteUART2("b"); // request the encoder count
+        break;
+      }
+      case 'q':  // Quit -> Set PIC32 into IDLE mode 
+      {
+        set_mode(IDLE);
+        break;
+      }
+      case 'r':  // Get the current mode of the PIC32
+      {
+        sprintf(buffer,"%d\r\n", get_mode()); // add two numbers and return
+        NU32DIP_WriteUART1(buffer);
         break;
       }
       case 'x': // add two numbers and return
@@ -62,11 +76,6 @@ int main()
         sscanf(buffer, "%d", &m);
         sprintf(buffer,"%d\r\n", n + m); // add two numbers and return
         NU32DIP_WriteUART1(buffer);
-        break;
-      }
-      case 'q':
-      {
-        // handle q for quit. Later you may want to return to IDLE mode here. 
         break;
       }
       default:
