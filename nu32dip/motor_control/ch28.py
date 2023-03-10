@@ -14,7 +14,8 @@ has_quit = False
 while not has_quit:
     print('PIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
-    print('\nc: Read encoder (ticks) \nd: Read encoder (degrees) \ne: Reset encoder count (ticks) \nx: Dummy Add to Numbers \nq: Quit') # '\t' is a tab
+    print('\nc: Read encoder (ticks) \nd: Read encoder (degrees) \ne: Reset encoder count (ticks) \
+           \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \nx: Dummy Add to Numbers') # '\t' is a tab
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
     selection_endline = selection+'\n'
@@ -28,12 +29,38 @@ while not has_quit:
         n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int
         print('Got back encoder count: ' + str(n_int) + '\n') # print it to the screen
+
     elif (selection == 'd'):
         n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int
         print('Got back encoder degrees: ' + str(n_int) + '\n') # print it to the screen
+
     elif (selection == 'e'): # Reset encoder count
         print('Reset encoder count ' + '\n') # print it to the screen
+
+    elif (selection == 'q'): # Quit & set PIC32 to IDLE mode
+        print('Exiting client and setting PIC32 to IDLE mode')
+        ser.write(('q'+'\n').encode()); # send the number to PIC
+
+        has_quit = True; # exit client
+        # be sure to close the port
+        ser.close()
+
+    elif (selection == 'r'): # Current mode of PIC32
+        n_str = ser.read_until(b'\n'); 
+        n_int = int(n_str) # turn it into an int
+        if (n_int == 0):
+            curr_mode = "IDLE"
+        elif (n_int == 1):
+            curr_mode = "PWM"
+        elif (n_int == 2):
+            curr_mode = "ITEST"
+        elif (n_int == 3):
+            curr_mode = "HOLD"
+        elif (n_int == 4):
+            curr_mode = "TRACK"
+        print('PIC32 mode is: ' + curr_mode + ' (' + str(n_int) + ')\n') # print it to the screen
+
     elif (selection == 'x'): # add two numbers and return
         # First number
         n_str = input('Enter 1ste number: ') # get the number to send
@@ -50,11 +77,7 @@ while not has_quit:
         n_str = ser.read_until(b'\n');  # get the incremented number back
         n_int = int(n_str) # turn it into an int
         print('Got back: ' + str(n_int) + '\n') # print it to the screen
-    elif (selection == 'q'):
-        print('Exiting client')
-        has_quit = True; # exit client
-        # be sure to close the port
-        ser.close()
+
     else:
         print('Invalid Selection ' + selection_endline)
 

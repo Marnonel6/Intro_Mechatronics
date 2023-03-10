@@ -3204,9 +3204,9 @@ int main()
         break;
 9d009ca4:	1000ffa5 	b	9d009b3c <main+0x88>
 9d009ca8:	240500c8 	li	a1,200
-        set_mode(HOLD);
+        set_mode(IDLE);
 9d009cac:	0f4037dd 	jal	9d00df74 <set_mode>
-9d009cb0:	24040003 	li	a0,3
+9d009cb0:	00002025 	move	a0,zero
         break;
 9d009cb4:	1000ffa1 	b	9d009b3c <main+0x88>
 9d009cb8:	240500c8 	li	a1,200
