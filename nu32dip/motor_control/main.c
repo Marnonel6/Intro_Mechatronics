@@ -2,6 +2,7 @@
 // include other header files here
 #include "encoder.h"
 #include "utilities.h"
+#include "ina219.h"
 
 #define BUF_SIZE 200
 #define TICK_TO_DEG 3.888889// Ticks per degree (1400/360)
@@ -19,11 +20,19 @@ int main()
 
   set_mode(IDLE); //  Set PIC32 into IDLE mode
 
+  INA219_Startup(); // Startup the current sensor
+
   while(1)
   {
     NU32DIP_ReadUART1(buffer,BUF_SIZE); // we expect the next character to be a menu command
     NU32DIP_YELLOW = 1;                   // clear the error LED
     switch (buffer[0]) {
+      case 'b': // Read current sensor (mA)
+      {
+        sprintf(buffer,"%f\r\n", INA219_read_current()); // add two numbers and return
+        NU32DIP_WriteUART1(buffer);
+        break;
+      }
       case 'c': // Read encoder counts
       {
         int count;

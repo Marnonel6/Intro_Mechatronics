@@ -14,7 +14,7 @@ has_quit = False
 while not has_quit:
     print('PIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
-    print('\nc: Read encoder (ticks) \nd: Read encoder (degrees) \ne: Reset encoder count (ticks) \
+    print('\nb: Read current sensor (mA) \nc: Read encoder (ticks) \nd: Read encoder (degrees) \ne: Reset encoder count (ticks) \
            \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \nx: Dummy Add to Numbers') # '\t' is a tab
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
@@ -25,7 +25,11 @@ while not has_quit:
     
     # take the appropriate action
     # there is no switch() in python, using if elif instead
-    if (selection == 'c'): # Read encoder count (ticks)
+    if (selection == 'b'): # Read current sensor (mA)
+        n_str = ser.read_until(b'\n'); 
+        n_int = float(n_str) # turn it into an float
+        print('Current sensor: ' + str(n_int) + ' mA' + '\n') # print it to the screen
+    elif (selection == 'c'): # Read encoder count (ticks)
         n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int
         print('Got back encoder count: ' + str(n_int) + '\n') # print it to the screen
