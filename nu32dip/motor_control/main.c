@@ -7,10 +7,10 @@
 #define BUF_SIZE 200
 #define TICK_TO_DEG 3.888889// Ticks per degree (1400/360)
 
-void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) {
+void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
     // static int counter = 0; // initialize counter once
-    // // insert line(s) to set OC1RS
-    // OC1RS = Waveform[counter];
+    // insert line(s) to set OC1RS
+    // OC1RS = 1000;
 
     // counter++; // add one to counter every time ISR is entered
     // if (counter == NUMSAMPS) {
@@ -29,7 +29,7 @@ int main()
   __builtin_disable_interrupts();
   // in future, initialize modules or peripherals here
   UART2_Startup();
-  setup_motor_PWM_timer();  // Setup timers and interrupts for motor control
+  setup_motor_timers_pins();  // Setup timers and interrupts for motor control
   set_mode(IDLE);           // Set PIC32 into IDLE mode
   INA219_Startup();         // Startup the current sensor
 

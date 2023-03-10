@@ -1,5 +1,6 @@
 #include "utilities.h"
 #include <stdio.h>
+#include "nu32dip.h"
 
 // a variable of type mode_t, private in the utilities c file
 // volatile because it is shared between the while(1) in main and the ISRs
@@ -14,8 +15,12 @@ void set_mode(enum mode_t s){
 	mode = s;
 }
 
-void setup_motor_PWM_timer()
+void setup_motor_timers_pins()
 {
+    // Select RB2 pin for motor direction control
+    TRISBCLR = 0x4;
+    MOTOR_DIRECTION = 0; // Clockwise
+
     // 20kHz Timer for PWM
     // Assign OC1 to RA0
     RPA0Rbits.RPA0R = 0b0101; // Set A0 to OC1
@@ -23,8 +28,8 @@ void setup_motor_PWM_timer()
     PR3 = 2399;               // period
     TMR3 = 0;                 // initial TMR3 count is 0
     OC1CONbits.OCM = 0b110;   // PWM mode without fault pin; other OC1CON bits are defaults
-    OC1RS = 1000;             // duty cycle = OC1RS/(PR3+1) = X%
-    OC1R = 1000;              // initialize before turning OC1 on; afterward it is read-only
+    OC1RS = 1000;                // duty cycle = OC1RS/(PR3+1) = X%
+    OC1R = 1000;                 // initialize before turning OC1 on; afterward it is read-only
     T3CONbits.ON = 1;         // turn on Timer3
     OC1CONbits.ON = 1;        // turn on OC1
     OC1CONbits.OCTSEL = 1;

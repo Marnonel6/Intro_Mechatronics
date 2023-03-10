@@ -3,8 +3,9 @@
 
 #include <xc.h> // processor SFR definitions
 #include <sys/attribs.h> // __ISR macro
-
 #include "nu32dip.h"
+
+#define MOTOR_DIRECTION LATBbits.LATB2
 
 // an enum of possible states, public in the utilities h file
 enum mode_t {IDLE, PWM, ITEST, HOLD, TRACK};
@@ -12,7 +13,7 @@ enum mode_t {IDLE, PWM, ITEST, HOLD, TRACK};
 // public function prototypes in the utilities h file
 volatile enum mode_t get_mode(void);
 void set_mode(enum mode_t s);
-void setup_motor_PWM_timer();
+void setup_motor_timers_pins();
 
 
 #endif // UTILITIES__H__
