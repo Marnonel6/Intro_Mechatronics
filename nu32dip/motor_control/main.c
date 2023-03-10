@@ -1,7 +1,9 @@
 #include "nu32dip.h"            // config bits, constants, funcs for startup and UART
 // include other header files here
+#include "encoder.h"
 
 #define BUF_SIZE 200
+#define TICK_TO_DEG 3.888889// 1400/360
 
 int main() 
 {
@@ -11,6 +13,7 @@ int main()
   NU32DIP_YELLOW = 1;        
   __builtin_disable_interrupts();
   // in future, initialize modules or peripherals here
+  UART2_Startup();
   __builtin_enable_interrupts();
 
   while(1)
@@ -18,13 +21,35 @@ int main()
     NU32DIP_ReadUART1(buffer,BUF_SIZE); // we expect the next character to be a menu command
     NU32DIP_YELLOW = 1;                   // clear the error LED
     switch (buffer[0]) {
-      case 'd': // dummy command for demonstration purposes // return the number + 1
+      case 'c': // Read encoder counts
       {
-        int n = 0;
-        NU32DIP_ReadUART1(buffer,BUF_SIZE);
-        sscanf(buffer, "%d", &n);
-        sprintf(buffer,"%d\r\n", n + 1); // return the number + 1
+        int count;
+        // read encoder count
+        WriteUART2("a"); // request the encoder count
+        while(!get_encoder_flag()){} // wait for the Pico to respond
+        set_encoder_flag(0); // clear the flag so you can read again later
+        count = get_encoder_count(); // get the encoder value
+
+        sprintf(buffer,"%d\r\n", count); // add two numbers and return
         NU32DIP_WriteUART1(buffer);
+        break;
+      }
+      case 'd': // Read encoder counts 1500/360 Deg
+      {
+        int count;
+        // read encoder count
+        WriteUART2("a"); // request the encoder count
+        while(!get_encoder_flag()){} // wait for the Pico to respond
+        set_encoder_flag(0); // clear the flag so you can read again later
+        count = (int)((double)get_encoder_count()/TICK_TO_DEG); // get the encoder value
+
+        sprintf(buffer,"%d\r\n", count); // add two numbers and return
+        NU32DIP_WriteUART1(buffer);
+        break;
+      }
+      case 'e': // Reset encoder count to 0
+      {
+        WriteUART2("b"); // request the encoder count
         break;
       }
       case 'x': // add two numbers and return

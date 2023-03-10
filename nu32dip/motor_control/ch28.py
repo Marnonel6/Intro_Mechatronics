@@ -14,7 +14,7 @@ has_quit = False
 while not has_quit:
     print('PIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
-    print('\td: Dummy Command \tx: Dummy Add to Numbers \tq: Quit') # '\t' is a tab
+    print('\tc: Read encoder (ticks) \td: Read encoder (degrees) \te: Reset encoder count (ticks) \tx: Dummy Add to Numbers \tq: Quit') # '\t' is a tab
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
     selection_endline = selection+'\n'
@@ -24,16 +24,16 @@ while not has_quit:
     
     # take the appropriate action
     # there is no switch() in python, using if elif instead
-    if (selection == 'd'):
-        # example operation
-        n_str = input('Enter number: ') # get the number to send
+    if (selection == 'c'): # Read encoder count (ticks)
+        n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int
-        print('number = ' + str(n_int)) # print it to the screen to double check
-
-        ser.write((str(n_int)+'\n').encode()); # send the number
-        n_str = ser.read_until(b'\n');  # get the incremented number back
+        print('Got back encoder count: ' + str(n_int) + '\n') # print it to the screen
+    elif (selection == 'd'):
+        n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int
-        print('Got back: ' + str(n_int) + '\n') # print it to the screen
+        print('Got back encoder degrees: ' + str(n_int) + '\n') # print it to the screen
+    elif (selection == 'e'): # Reset encoder count
+        print('Reset encoder count ' + '\n') # print it to the screen
     elif (selection == 'x'): # add two numbers and return
         # First number
         n_str = input('Enter 1ste number: ') # get the number to send
