@@ -29,6 +29,7 @@ while not has_quit:
         n_str = ser.read_until(b'\n'); 
         n_int = float(n_str) # turn it into an float
         print('Current sensor: ' + str(n_int) + ' mA' + '\n') # print it to the screen
+
     elif (selection == 'c'): # Read encoder count (ticks)
         n_str = ser.read_until(b'\n'); 
         n_int = int(n_str) # turn it into an int

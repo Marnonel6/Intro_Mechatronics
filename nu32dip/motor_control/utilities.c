@@ -13,3 +13,29 @@ volatile enum mode_t get_mode(void){
 void set_mode(enum mode_t s){
 	mode = s;
 }
+
+void setup_motor_PWM_timer()
+{
+    // 20kHz Timer for PWM
+    // Assign OC1 to RA0
+    RPA0Rbits.RPA0R = 0b0101; // Set A0 to OC1
+    T3CONbits.TCKPS = 0b001;  // Timer3 prescaler
+    PR3 = 2399;               // period
+    TMR3 = 0;                 // initial TMR3 count is 0
+    OC1CONbits.OCM = 0b110;   // PWM mode without fault pin; other OC1CON bits are defaults
+    OC1RS = 1000;             // duty cycle = OC1RS/(PR3+1) = X%
+    OC1R = 1000;              // initialize before turning OC1 on; afterward it is read-only
+    T3CONbits.ON = 1;         // turn on Timer3
+    OC1CONbits.ON = 1;        // turn on OC1
+    OC1CONbits.OCTSEL = 1;
+
+    // Set the control loop (Timer 2 interrupt) to 5kHz
+    T2CONbits.TCKPS = 0b000; // Timer2 prescaler
+    PR2 = 9599;              // period
+    TMR2 = 0;                // initial TMR2 count is 0
+    T2CONbits.ON = 1;        // turn on Timer2
+    IPC2bits.T2IP = 5;       // step 4: interrupt priority 2
+    IPC2bits.T2IS = 0;       // step 4: interrupt priority 1
+    IFS0bits.T2IF = 0;       // step 5: clear the int flag
+    IEC0bits.T2IE = 1;       // step 6: enable T2
+}
