@@ -18,10 +18,11 @@ while not has_quit:
     # display the menu options; this list will grow
     print('\nb: Read current sensor (mA) \nc: Read encoder (ticks) \nd: Read encoder (degrees) \
            \ne: Reset encoder count (ticks) \nf: Set PWM (-100 to 100) duty cycle \
-           \ng: Set current gains \nh: Get current gains \nk: Test current control \
-           \np: Unpower the motor \
-           \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
+           \ng: Set current gains \nh: Get current gains \ni: Set position gains \
+           \nj: Get position gains \nk: Test current control \nl: Go to angle (deg) \
+           \np: Unpower the motor \ \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
            \nx: Dummy Add to Numbers') # '\t' is a tab
+
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
     selection_endline = selection+'\n'
@@ -75,10 +76,35 @@ while not has_quit:
         n_int2 = float(n_str2) # turn it into an int
         print('Ki: ' + str(n_int2) + '\n') # print it to the screen
 
+    elif (selection == 'i'): # Set position gains
+        # First number
+        n_str = input('Enter Kp: ') # get the number to send
+        n_int = float(n_str) # turn it into an float
+        ser.write((str(n_int)+'\n').encode()); # send the number to PIC
+
+        # Second number
+        n_str2 = input('Enter Ki: ') # get the number to send
+        n_int2 = float(n_str2) # turn it into an float
+        ser.write((str(n_int2)+'\n').encode()); # send the number
+
+    elif (selection == 'j'): # Get position gains
+        n_str = ser.read_until(b'\n');  # get the incremented number back
+        n_int = float(n_str) # turn it into an float
+        print('Kp: ' + str(n_int) + '\n') # print it to the screen
+
+        n_str2 = ser.read_until(b'\n');  # get the incremented number back
+        n_int2 = float(n_str2) # turn it into an float
+        print('Ki: ' + str(n_int2) + '\n') # print it to the screen
+
     elif (selection == 'k'): # Test current control
         print('Testing current controller!' + '\n')
         read_plot_matrix()
         print('Done testing!' + '\n')
+
+    elif (selection == 'l'): # Go to angle (deg)
+        print('Going to angle...' + '\n')
+
+        print('Reached desired angle!' + '\n')
 
     elif (selection == 'p'): # Unpower the motor
         print('Motor unpowered!' + '\n')

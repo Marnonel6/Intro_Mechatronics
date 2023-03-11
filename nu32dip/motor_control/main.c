@@ -11,10 +11,10 @@
 static volatile int set_pwm = 0;            // User defined PWM from menu option f
 static volatile float Kp = 0.0;            // Proportional gain
 static volatile float Ki = 0.0;            // Integral gain
+static volatile float Kp_pos = 0.0;            // Proportional gain
+static volatile float Ki_pos = 0.0;            // Integral gain
 static volatile int Desired_Current[ITEST_PLOTPTS]; // measured values to plot
 static volatile int Actual_Current[ITEST_PLOTPTS]; // reference values to plot
-static volatile int StoringData = 0; // if this flag = 1, currently storing
-
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
 
@@ -43,12 +43,11 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop fo
         }
         case ITEST:
         {
-            //
+            // Set static variables
             static int square_count = 0;
             static float desired_amp = 0.0;
             static float integral_error = 0.0;
             static int plotind = 0; // index for data arrays; counts up to PLOTPTS
-            char current_buffer[BUF_SIZE];
 
             if (square_count < 25 || (square_count >= 50 && square_count < 75))
             {
@@ -210,6 +209,22 @@ int main()
         sprintf(buffer,"%10.5f\r\n", Kp);
         NU32DIP_WriteUART1(buffer);
         sprintf(buffer,"%10.5f\r\n", Ki);
+        NU32DIP_WriteUART1(buffer);
+        break;
+      }
+      case 'i': // Set position gains
+      {
+        NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type one number then enter
+        sscanf(buffer, "%f", &Kp_pos);
+        NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type next number then enter
+        sscanf(buffer, "%f", &Ki_pos);
+        break;
+      }
+      case 'j': // Get position gains
+      {
+        sprintf(buffer,"%10.5f\r\n", Kp_pos);
+        NU32DIP_WriteUART1(buffer);
+        sprintf(buffer,"%10.5f\r\n", Ki_pos);
         NU32DIP_WriteUART1(buffer);
         break;
       }
