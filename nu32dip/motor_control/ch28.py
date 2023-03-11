@@ -6,6 +6,7 @@
 
 import serial
 from ch28_read_plot_matrix import read_plot_matrix
+from genref import genRef
 
 ser = serial.Serial('/dev/ttyUSB0',230400)
 print('Opening port: ')
@@ -20,6 +21,7 @@ while not has_quit:
            \ne: Reset encoder count (ticks) \nf: Set PWM (-100 to 100) duty cycle \
            \ng: Set current gains \nh: Get current gains \ni: Set position gains \
            \nj: Get position gains \nk: Test current control \nl: Go to angle (deg) \
+           \nm: Load step trajectory \nn: Load cubic trajectory \no: Execute trajectory \
            \np: Unpower the motor \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
            \nx: Dummy Add to Numbers') # '\t' is a tab
 
@@ -119,6 +121,29 @@ while not has_quit:
         print('Going to angle...' + '\n')
         read_plot_matrix()
         print('Reached desired angle!' + '\n')
+
+    elif (selection == 'm'): # Load step trajectory
+        traj = genRef('step')
+        for i in traj:
+            ser.write((str(i)+'\n').encode()); # send the number to PIC
+
+        print('Loaded step trajectory!' + '\n')
+
+    elif (selection == 'n'): # Load cubic trajectory
+        traj = genRef('cubic')
+        # for i in traj:
+        #     print(f'{i} \n')
+        print('Loaded cubic trajectory!' + '\n')
+
+    elif (selection == 'o'): # Execute trajectory
+        # # First number
+        # n_str = input('Enter angle: ') # get the number to send
+        # n_int = float(n_str) # turn it into an float
+        # ser.write((str(n_int)+'\n').encode()); # send the number to PIC
+
+        print('Tracking trajectory...' + '\n')
+        read_plot_matrix()
+        print('Done!' + '\n')
 
     elif (selection == 'p'): # Unpower the motor
         print('Motor unpowered!' + '\n')

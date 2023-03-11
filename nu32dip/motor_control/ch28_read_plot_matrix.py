@@ -32,7 +32,7 @@ def read_plot_matrix():
     plt.xlabel('index')
     plt.show()
 
-from genref import genRef
+# from genref import genRef
 
 import serial
 ser = serial.Serial('/dev/ttyUSB0',230400)

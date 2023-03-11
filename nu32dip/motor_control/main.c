@@ -10,6 +10,7 @@
 #define ITEST_PLOTPTS 100       // number of data points to plot
 #define POS_CONTROLLER_DT 0.005 // Change in time for derivative velocity calculation for positional control
 #define MAX_CURRENT 70.0        // Current at 100% PWM of motor
+#define MAX_TRAJ_POINTS 2000    // Maximum trajectory points to track (20 seconds)
 
 static volatile int set_pwm = 0;                    // User defined PWM from menu option f
 static volatile float set_angle = 0.0;              // Desired angle by user
@@ -19,12 +20,16 @@ static volatile float Ki = 0.15;                     // Integral gain
 static volatile int Desired_Current[ITEST_PLOTPTS]; // measured values to plot
 static volatile int Actual_Current[ITEST_PLOTPTS];  // reference values to plot
 // Position PID controller
-static volatile float Kp_pos = 0.0;                 // Proportional gain
-static volatile float Kd_pos = 0.0;                 // Derivative gain
-static volatile float Ki_pos = 0.0;                 // Integral gain
+static volatile float Kp_pos = 2.0;                 // Proportional gain
+static volatile float Kd_pos = 0.2;                 // Derivative gain
+static volatile float Ki_pos = 1.0;                 // Integral gain
 static volatile float desired_amp_pos = 0.0;        // Position control desired amps
 static volatile int Desired_Position[200]; // measured values to plot
 static volatile int Actual_Position[200];  // reference values to plot
+// Trajectory control
+static volatile float Desired_trajectory[MAX_TRAJ_POINTS];  // Reference trajectory
+static volatile int Desired_Position_traj[MAX_TRAJ_POINTS]; // measured values to plot
+static volatile int Actual_Position_traj[MAX_TRAJ_POINTS];  // reference values to plot
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Current_Controller(void) { // 5kHz control for motor current control
 
@@ -125,14 +130,44 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Current_Controller(void) { // 5kHz control
             static float integral_error = 0.0;
             static int plotind = 0; // index for data arrays; counts up to PLOTPTS
 
-            // else if (square_count >= 99)
-            // {
-            //   square_count = 0; // Reset counter for next test
-            //   set_mode(IDLE);
-            //   integral_error = 0.0;
-            //   desired_amp = 0.0;
-            //   plotind = 0;
-            // }
+            // PI Control
+            float error = desired_amp_pos - INA219_read_current(); // Calculate error
+            integral_error += error;
+            // Limit integral windup
+            if (integral_error > INTEGRAL_LIMIT){
+                integral_error = INTEGRAL_LIMIT;
+            } else if (integral_error < -INTEGRAL_LIMIT)
+            {
+                integral_error = -INTEGRAL_LIMIT;
+            }
+            float u_current = Kp*error + Ki*integral_error;
+            if (u_current > 100.0) { // 100% duty cycle
+                u_current = 100.0;
+            } else if (u_current < -100.0) {
+                u_current = -100.0;
+            }
+
+            // Set PWM and direction based on user input from menu f
+            if (u_current<0)
+            {
+              MOTOR_DIRECTION = 0; // Anti-Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)u_current/-100.0));
+            }
+            else if (u_current>=0)
+            {
+              MOTOR_DIRECTION = 1; // Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)u_current/100.0));
+            }
+
+            break;
+        }
+        case TRACK:
+        {
+            //
+            // Set static variables
+            static int square_count = 0;
+            static float integral_error = 0.0;
+            static int plotind = 0; // index for data arrays; counts up to PLOTPTS
 
             // PI Control
             float error = desired_amp_pos - INA219_read_current(); // Calculate error
@@ -162,22 +197,7 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Current_Controller(void) { // 5kHz control
               MOTOR_DIRECTION = 1; // Clockwise
               OC1RS = (int)(PR3_PERIOD*((float)u_current/100.0));
             }
-            // square_count++;
 
-            // Desired_Current[plotind] = (int)desired_amp; // store data in global arrays
-            // Actual_Current[plotind] = (int)INA219_read_current();
-            // plotind++; // increment plot data index
-
-            // if (plotind == ITEST_PLOTPTS)
-            // { // if max number of plot points plot is reached,
-            //     plotind = 0; // reset the plot index
-            // }
-
-            break;
-        }
-        case TRACK:
-        {
-            //
             break;
         }
     }
@@ -193,20 +213,9 @@ void __ISR(_TIMER_4_VECTOR, IPL5SOFT) Position_Controller(void) { // 200Hz contr
             //
 
             // Set static variables
-            // static int square_count = 0;
-            // static float desired_amp = 0.0;
             static float integral_error_pos = 0.0;
             static int plotind = 0; // index for data arrays; counts up to PLOTPTS
             static float prev_error = 0;
-
-            // else if (square_count >= 99)
-            // {
-            //   square_count = 0; // Reset counter for next test
-            //   set_mode(IDLE);
-            //   integral_error = 0.0;
-            //   desired_amp = 0.0;
-            //   plotind = 0;
-            // }
 
             // read encoder count
             WriteUART2("a"); // request the encoder count
@@ -252,6 +261,50 @@ void __ISR(_TIMER_4_VECTOR, IPL5SOFT) Position_Controller(void) { // 200Hz contr
         case TRACK:
         {
             //
+            // Set static variables
+            static float integral_error_pos = 0.0;
+            static int plotind = 0; // index for data arrays; counts up to PLOTPTS
+            static float prev_error = 0;
+
+            // read encoder count
+            WriteUART2("a"); // request the encoder count
+            while(!get_encoder_flag()){} // wait for the Pico to respond
+            set_encoder_flag(0); // clear the flag so you can read again later
+
+            // PI Control
+            float error_pos = -(Desired_trajectory[plotind] - (float)(get_encoder_count()/TICK_TO_DEG)); // Calculate Angle error
+            float error_velocity = (error_pos - prev_error)/POS_CONTROLLER_DT;
+            prev_error = error_pos;
+            integral_error_pos += error_pos;
+
+            // Limit integral windup
+            if (integral_error_pos > INTEGRAL_LIMIT_POS){
+                integral_error_pos = INTEGRAL_LIMIT_POS;
+            } else if (integral_error_pos < -INTEGRAL_LIMIT_POS)
+            {
+                integral_error_pos = -INTEGRAL_LIMIT_POS;
+            }
+
+            float desired_current = Kp_pos*error_pos + Kd_pos*error_velocity + Ki_pos*integral_error_pos;
+            if (desired_current > MAX_CURRENT) { // 100% duty cycle
+                desired_current = MAX_CURRENT;
+            } else if (desired_current < -MAX_CURRENT) {
+                desired_current = -MAX_CURRENT;
+            }
+
+            desired_amp_pos = desired_current;
+
+            Desired_Position_traj[plotind] = Desired_trajectory[plotind];// (int)desired_amp_pos; // store data in global arrays
+            Actual_Position_traj[plotind] = (int)(get_encoder_count()/TICK_TO_DEG);
+            plotind++; // increment plot data index
+
+            if (plotind == MAX_TRAJ_POINTS)
+            { // if max number of plot points plot is reached,
+                plotind = 0; // reset the plot index
+                set_mode(IDLE);
+                prev_error = 0;
+            }
+
             break;
         }
     }
@@ -400,6 +453,46 @@ int main()
         {
             // Send desired and actual currents
             sprintf(buffer,"%d %d\r\n", Desired_Position[i], Actual_Position[i] );
+            NU32DIP_WriteUART1(buffer);
+        }
+        break;
+      }
+      case 'm': // Load step trajectory
+      {
+        for (int i = 0; i < MAX_TRAJ_POINTS; i++)
+        {
+            // Save desired trajectory
+            NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type one number then enter
+            sscanf(buffer, "%f", &Desired_trajectory[i]);
+        }
+        break;
+      }
+      case 'n': // Load cubic trajectory
+      {
+        // for (int i = 0; i < MAX_TRAJ_POINTS; i++)
+        // {
+        //     // Save desired trajectory
+        //     sprintf(buffer,"%f\r\n", Desired_trajectory[i]);
+        //     NU32DIP_WriteUART1(buffer);
+        // }
+        //     // Save desired trajectory
+        //     sprintf(buffer,"size of = %d\r\n", sizeof(Desired_trajectory));
+        //     NU32DIP_WriteUART1(buffer);
+        break;
+      }
+      case 'o': // Execute trajectory
+      {
+        WriteUART2("b"); // RESET the encoder count
+
+        sprintf(buffer,"%d\r\n", MAX_TRAJ_POINTS);
+        NU32DIP_WriteUART1(buffer);
+
+        set_mode(TRACK); // Set mode to TRACK
+        while (get_mode() == TRACK){;}
+        for (int i = 0; i < MAX_TRAJ_POINTS; i++)
+        {
+            // Send desired and actual currents
+            sprintf(buffer,"%d %d\r\n", Desired_Position_traj[i], Actual_Position_traj[i] );
             NU32DIP_WriteUART1(buffer);
         }
         break;
