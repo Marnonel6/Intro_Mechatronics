@@ -469,15 +469,12 @@ int main()
       }
       case 'n': // Load cubic trajectory
       {
-        // for (int i = 0; i < MAX_TRAJ_POINTS; i++)
-        // {
-        //     // Save desired trajectory
-        //     sprintf(buffer,"%f\r\n", Desired_trajectory[i]);
-        //     NU32DIP_WriteUART1(buffer);
-        // }
-        //     // Save desired trajectory
-        //     sprintf(buffer,"size of = %d\r\n", sizeof(Desired_trajectory));
-        //     NU32DIP_WriteUART1(buffer);
+        for (int i = 0; i < MAX_TRAJ_POINTS; i++)
+        {
+            // Save desired trajectory
+            NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type one number then enter
+            sscanf(buffer, "%f", &Desired_trajectory[i]);
+        }
         break;
       }
       case 'o': // Execute trajectory

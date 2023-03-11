@@ -123,6 +123,7 @@ while not has_quit:
         print('Reached desired angle!' + '\n')
 
     elif (selection == 'm'): # Load step trajectory
+        print('You must enter from 0 - 10 seconds!' + '\n')
         traj = genRef('step')
         for i in traj:
             ser.write((str(i)+'\n').encode()); # send the number to PIC
@@ -130,16 +131,14 @@ while not has_quit:
         print('Loaded step trajectory!' + '\n')
 
     elif (selection == 'n'): # Load cubic trajectory
+        print('You must enter from 0 - 10 seconds!' + '\n')
         traj = genRef('cubic')
-        # for i in traj:
-        #     print(f'{i} \n')
+        for i in traj:
+            ser.write((str(i)+'\n').encode()); # send the number to PIC
+
         print('Loaded cubic trajectory!' + '\n')
 
     elif (selection == 'o'): # Execute trajectory
-        # # First number
-        # n_str = input('Enter angle: ') # get the number to send
-        # n_int = float(n_str) # turn it into an float
-        # ser.write((str(n_int)+'\n').encode()); # send the number to PIC
 
         print('Tracking trajectory...' + '\n')
         read_plot_matrix()
