@@ -5,6 +5,8 @@
 # sudo apt-get install python3-matplotlib
 
 import serial
+from ch28_read_plot_matrix import read_plot_matrix
+
 ser = serial.Serial('/dev/ttyUSB0',230400)
 print('Opening port: ')
 print(ser.name)
@@ -12,7 +14,7 @@ print(ser.name)
 has_quit = False
 # menu loop
 while not has_quit:
-    print('PIC32 MOTOR DRIVER INTERFACE')
+    print('\nPIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
     print('\nb: Read current sensor (mA) \nc: Read encoder (ticks) \nd: Read encoder (degrees) \
            \ne: Reset encoder count (ticks) \nf: Set PWM (-100 to 100) duty cycle \
@@ -74,7 +76,9 @@ while not has_quit:
         print('Ki: ' + str(n_int2) + '\n') # print it to the screen
 
     elif (selection == 'k'): # Test current control
-        pass
+        print('Testing current controller!' + '\n')
+        read_plot_matrix()
+        print('Done testing!' + '\n')
 
     elif (selection == 'p'): # Unpower the motor
         print('Motor unpowered!' + '\n')

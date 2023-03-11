@@ -5,50 +5,118 @@
 #include "ina219.h"
 
 #define BUF_SIZE 200
+#define INTEGRAL_LIMIT 400.0 // Limit integral windup
+#define ITEST_PLOTPTS 100 // number of data points to plot
 
 static volatile int set_pwm = 0;            // User defined PWM from menu option f
 static volatile float Kp = 0.0;            // Proportional gain
 static volatile float Ki = 0.0;            // Integral gain
+static volatile int Desired_Current[ITEST_PLOTPTS]; // measured values to plot
+static volatile int Actual_Current[ITEST_PLOTPTS]; // reference values to plot
+static volatile int StoringData = 0; // if this flag = 1, currently storing
+
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
 
     switch(get_mode()){
         case IDLE:
         {
-          // set pwm duty to 0 and direction to 0
-          OC1RS = 0;
-          MOTOR_DIRECTION = 0; // Clockwise
-          break;
+            // set pwm duty to 0 and direction to 0
+            OC1RS = 0;
+            MOTOR_DIRECTION = 0; // Clockwise
+            break;
         }
         case PWM:
         {
-          // Set PWM and direction based on user input from menu f
-          if (set_pwm<0)
-          {
-            MOTOR_DIRECTION = 1; // Anti-Clockwise
-            OC1RS = (int)(PR3_PERIOD*((float)set_pwm/-100.0));
-          }
-          else if (set_pwm>=0)
-          {
-            MOTOR_DIRECTION = 0; // Clockwise
-            OC1RS = (int)(PR3_PERIOD*((float)set_pwm/100.0));
-          }
-          break;
+            // Set PWM and direction based on user input from menu f
+            if (set_pwm<0)
+            {
+              MOTOR_DIRECTION = 1; // Anti-Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)set_pwm/-100.0));
+            }
+            else if (set_pwm>=0)
+            {
+              MOTOR_DIRECTION = 0; // Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)set_pwm/100.0));
+            }
+            break;
         }
         case ITEST:
         {
-          //
-          break;
+            //
+            static int square_count = 0;
+            static float desired_amp = 0.0;
+            static float integral_error = 0.0;
+            static int plotind = 0; // index for data arrays; counts up to PLOTPTS
+            char current_buffer[BUF_SIZE];
+
+            if (square_count < 25 || (square_count >= 50 && square_count < 75))
+            {
+              desired_amp = 30.0; // [mA]
+            }
+            else if ((square_count >= 25 && square_count < 50) || (square_count >= 75 && square_count < 99))
+            {
+              desired_amp = -30.0; // [mA]
+            }
+            else if (square_count >= 99)
+            {
+              square_count = 0; // Reset counter for next test
+              set_mode(IDLE);
+              integral_error = 0.0;
+              desired_amp = 0.0;
+              plotind = 0;
+            }
+
+            // PI Control
+            float error = desired_amp - INA219_read_current(); // Calculate error
+            integral_error += error;
+            // Limit integral windup
+            if (integral_error > INTEGRAL_LIMIT){
+                integral_error = INTEGRAL_LIMIT;
+            } else if (integral_error < -INTEGRAL_LIMIT)
+            {
+                integral_error = -INTEGRAL_LIMIT;
+            }
+            float u_current = Kp*error + Ki*integral_error;
+            if (u_current > 100.0) { // 100% duty cycle
+                u_current = 100.0;
+            } else if (u_current < -100.0) {
+                u_current = -100.0;
+            }
+
+            // Set PWM and direction based on user input from menu f
+            if (u_current<0)
+            {
+              MOTOR_DIRECTION = 0; // Anti-Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)u_current/-100.0));
+            }
+            else if (u_current>=0)
+            {
+              MOTOR_DIRECTION = 1; // Clockwise
+              OC1RS = (int)(PR3_PERIOD*((float)u_current/100.0));
+            }
+            square_count++;
+
+            Desired_Current[plotind] = (int)desired_amp; // store data in global arrays
+            Actual_Current[plotind] = (int)INA219_read_current();
+            plotind++; // increment plot data index
+
+            if (plotind == ITEST_PLOTPTS)
+            { // if max number of plot points plot is reached,
+                plotind = 0; // reset the plot index
+            }
+
+            break;
         }
         case HOLD:
         {
-          //
-          break;
+            //
+            break;
         }
         case TRACK:
         {
-          //
-          break;
+            //
+            break;
         }
     }
 
@@ -145,8 +213,18 @@ int main()
         NU32DIP_WriteUART1(buffer);
         break;
       }
-      case 'k': // Test current control
+      case 'k': // Test current controller
       {
+        sprintf(buffer,"%d\r\n", ITEST_PLOTPTS);
+        NU32DIP_WriteUART1(buffer);
+        set_mode(ITEST); // Set mode to ITEST
+        while (get_mode() == ITEST){;}
+        for (int i = 0; i < ITEST_PLOTPTS; i++)
+        {
+            // Send desired and actual currents
+            sprintf(buffer,"%d %d\r\n", Desired_Current[i], Actual_Current[i] );
+            NU32DIP_WriteUART1(buffer);
+        }
         break;
       }
       case 'p': // Unpower the motor
