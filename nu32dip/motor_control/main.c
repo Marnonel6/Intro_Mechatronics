@@ -99,7 +99,8 @@ int main()
         WriteUART2("a"); // request the encoder count
         while(!get_encoder_flag()){} // wait for the Pico to respond
         set_encoder_flag(0); // clear the flag so you can read again later
-        count = (int)((double)get_encoder_count()/TICK_TO_DEG); // get the encoder value+
+        // count = (int)((double)get_encoder_count()/TICK_TO_DEG); // get the encoder value+
+        count = (int)(get_encoder_count()/TICK_TO_DEG);
 
         sprintf(buffer,"%d\r\n", count); // add two numbers and return
         NU32DIP_WriteUART1(buffer);

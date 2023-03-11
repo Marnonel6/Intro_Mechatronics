@@ -15,7 +15,8 @@ while not has_quit:
     print('PIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
     print('\nb: Read current sensor (mA) \nc: Read encoder (ticks) \nd: Read encoder (degrees) \ne: Reset encoder count (ticks) \
-           \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \nx: Dummy Add to Numbers') # '\t' is a tab
+           \nf: Set PWM (-100 to 100) duty cycle \np: Unpower the motor \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
+           \nx: Dummy Add to Numbers') # '\t' is a tab
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
     selection_endline = selection+'\n'
@@ -43,9 +44,17 @@ while not has_quit:
     elif (selection == 'e'): # Reset encoder count
         print('Reset encoder count ' + '\n') # print it to the screen
 
+    elif (selection == 'f'): # Set PWM (-100 to 100) and direction
+        n_str = input('Enter the PWM duty cycle [%] with +- as the direction: ') # get the number to send
+        n_int = int(n_str) # turn it into an int
+        print('PWM duty_cycle = ' + str(n_int) + '%') # print it to the screen to double check
+        ser.write((str(n_int)+'\n').encode()); # send the number to PIC
+
+    elif (selection == 'p'): # Unpower the motor
+        print('Motor unpowered!' + '\n')
+
     elif (selection == 'q'): # Quit & set PIC32 to IDLE mode
-        print('Exiting client and setting PIC32 to IDLE mode')
-        ser.write(('q'+'\n').encode()); # send the number to PIC
+        print('Exiting client and setting PIC32 to IDLE mode'  + '\n')
 
         has_quit = True; # exit client
         # be sure to close the port
