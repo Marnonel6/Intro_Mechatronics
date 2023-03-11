@@ -5,18 +5,52 @@
 #include "ina219.h"
 
 #define BUF_SIZE 200
-#define TICK_TO_DEG 3.888889// Ticks per degree (1400/360)
+
+int set_pwm = 0;            // User defined PWM from menu option f
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
-    // static int counter = 0; // initialize counter once
-    // insert line(s) to set OC1RS
-    // OC1RS = 1000;
 
-    // counter++; // add one to counter every time ISR is entered
-    // if (counter == NUMSAMPS) {
-    //     counter = 0; // roll the counter over when needed
-    // }
-    // // insert line to clear interrupt flag
+    switch(get_mode()){
+        case IDLE:
+        {
+          // set pwm duty to 0 and direction to 0
+          OC1RS = 0;
+          MOTOR_DIRECTION = 0; // Clockwise
+          break;
+        }
+        case PWM:
+        {
+          // Set PWM and direction based on user input from menu f
+        //   OC1RS = PR3_PERIOD*((float)set_pwm/-100.0);
+          if (set_pwm<0)
+          {
+            MOTOR_DIRECTION = 1; // Anti-Clockwise
+            OC1RS = PR3_PERIOD*((float)set_pwm/-100.0);
+          }
+          else if (set_pwm>=0)
+          {
+            MOTOR_DIRECTION = 0; // Clockwise
+            OC1RS = PR3_PERIOD*((float)set_pwm/100.0);
+          }
+          break;
+        }
+        case ITEST:
+        {
+          //
+          break;
+        }
+        case HOLD:
+        {
+          //
+          break;
+        }
+        case TRACK:
+        {
+          //
+          break;
+        }
+    }
+
     IFS0bits.T2IF = 0;            // clear interrupt flag IFS0<3>
 }
 
@@ -30,9 +64,9 @@ int main()
   // in future, initialize modules or peripherals here
   UART2_Startup();
   setup_motor_timers_pins();  // Setup timers and interrupts for motor control
-  set_mode(IDLE);           // Set PIC32 into IDLE mode
-  INA219_Startup();         // Startup the current sensor
-
+  set_mode(IDLE);             // Set PIC32 into IDLE mode
+  INA219_Startup();           // Startup the current sensor
+//   int set_pwm = 0;            // User defined PWM from menu option f
   __builtin_enable_interrupts();
 
   while(1)
@@ -75,6 +109,22 @@ int main()
       case 'e': // Reset encoder count to 0
       {
         WriteUART2("b"); // request the encoder count
+        break;
+      }
+      case 'f': // Set PWM (-100 to 100) and direction
+      {
+        NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type pwm number then enter
+        sscanf(buffer, "%d", &set_pwm);
+        set_mode(PWM);
+
+        sprintf(buffer,"%d\r\n", set_pwm); // add two numbers and return
+        NU32DIP_WriteUART1(buffer);
+        
+        break;
+      }
+      case 'p': // Unpower the motor
+      {
+        set_mode(IDLE); // Set mode to IDLE
         break;
       }
       case 'q':  // Quit -> Set PIC32 into IDLE mode 

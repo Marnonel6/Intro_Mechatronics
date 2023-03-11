@@ -25,7 +25,7 @@ void setup_motor_timers_pins()
     // Assign OC1 to RA0
     RPA0Rbits.RPA0R = 0b0101; // Set A0 to OC1
     T3CONbits.TCKPS = 0b001;  // Timer3 prescaler
-    PR3 = 2399;               // period
+    PR3 = PR3_PERIOD - 1;               // period
     TMR3 = 0;                 // initial TMR3 count is 0
     OC1CONbits.OCM = 0b110;   // PWM mode without fault pin; other OC1CON bits are defaults
     OC1RS = 1000;                // duty cycle = OC1RS/(PR3+1) = X%

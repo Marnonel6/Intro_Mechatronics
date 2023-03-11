@@ -6,6 +6,8 @@
 #include "nu32dip.h"
 
 #define MOTOR_DIRECTION LATBbits.LATB2
+#define TICK_TO_DEG 3.888889// Ticks per degree (1400/360)
+#define PR3_PERIOD 2400
 
 // an enum of possible states, public in the utilities h file
 enum mode_t {IDLE, PWM, ITEST, HOLD, TRACK};
