@@ -6,7 +6,7 @@
 
 #define BUF_SIZE 200
 
-int set_pwm = 0;            // User defined PWM from menu option f
+static volatile int set_pwm = 0;            // User defined PWM from menu option f
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
 
@@ -21,16 +21,15 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop fo
         case PWM:
         {
           // Set PWM and direction based on user input from menu f
-        //   OC1RS = PR3_PERIOD*((float)set_pwm/-100.0);
           if (set_pwm<0)
           {
             MOTOR_DIRECTION = 1; // Anti-Clockwise
-            OC1RS = PR3_PERIOD*((float)set_pwm/-100.0);
+            OC1RS = (int)(PR3_PERIOD*((float)set_pwm/-100.0));
           }
           else if (set_pwm>=0)
           {
             MOTOR_DIRECTION = 0; // Clockwise
-            OC1RS = PR3_PERIOD*((float)set_pwm/100.0);
+            OC1RS = (int)(PR3_PERIOD*((float)set_pwm/100.0));
           }
           break;
         }
@@ -66,7 +65,7 @@ int main()
   setup_motor_timers_pins();  // Setup timers and interrupts for motor control
   set_mode(IDLE);             // Set PIC32 into IDLE mode
   INA219_Startup();           // Startup the current sensor
-//   int set_pwm = 0;            // User defined PWM from menu option f
+
   __builtin_enable_interrupts();
 
   while(1)
@@ -117,9 +116,14 @@ int main()
         sscanf(buffer, "%d", &set_pwm);
         set_mode(PWM);
 
-        sprintf(buffer,"%d\r\n", set_pwm); // add two numbers and return
-        NU32DIP_WriteUART1(buffer);
-        
+        // Limit PWM to +-100
+        if (set_pwm<-100){
+            set_pwm = -100;
+        }
+        else if (set_pwm>100){
+            set_pwm = 100;
+        }
+
         break;
       }
       case 'p': // Unpower the motor
