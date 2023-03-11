@@ -7,6 +7,8 @@
 #define BUF_SIZE 200
 
 static volatile int set_pwm = 0;            // User defined PWM from menu option f
+static volatile float Kp = 0.0;            // Proportional gain
+static volatile float Ki = 0.0;            // Integral gain
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Controller(void) { // 5kHz control loop for the motor
 
@@ -125,6 +127,26 @@ int main()
             set_pwm = 100;
         }
 
+        break;
+      }
+      case 'g': // Set current gains
+      {
+        NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type one number then enter
+        sscanf(buffer, "%f", &Kp);
+        NU32DIP_ReadUART1(buffer,BUF_SIZE); // Type next number then enter
+        sscanf(buffer, "%f", &Ki);
+        break;
+      }
+      case 'h': // Get current gains
+      {
+        sprintf(buffer,"%10.5f\r\n", Kp);
+        NU32DIP_WriteUART1(buffer);
+        sprintf(buffer,"%10.5f\r\n", Ki);
+        NU32DIP_WriteUART1(buffer);
+        break;
+      }
+      case 'k': // Test current control
+      {
         break;
       }
       case 'p': // Unpower the motor
