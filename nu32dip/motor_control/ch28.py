@@ -20,7 +20,7 @@ while not has_quit:
            \ne: Reset encoder count (ticks) \nf: Set PWM (-100 to 100) duty cycle \
            \ng: Set current gains \nh: Get current gains \ni: Set position gains \
            \nj: Get position gains \nk: Test current control \nl: Go to angle (deg) \
-           \np: Unpower the motor \ \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
+           \np: Unpower the motor \nq: Quit & set PIC32 to IDLE mode \nr: Current mode of PIC32 \
            \nx: Dummy Add to Numbers') # '\t' is a tab
 
     # read the user's choice
@@ -83,6 +83,11 @@ while not has_quit:
         ser.write((str(n_int)+'\n').encode()); # send the number to PIC
 
         # Second number
+        n_str = input('Enter Kd: ') # get the number to send
+        n_int = float(n_str) # turn it into an float
+        ser.write((str(n_int)+'\n').encode()); # send the number to PIC
+
+        # Third number
         n_str2 = input('Enter Ki: ') # get the number to send
         n_int2 = float(n_str2) # turn it into an float
         ser.write((str(n_int2)+'\n').encode()); # send the number
@@ -90,11 +95,15 @@ while not has_quit:
     elif (selection == 'j'): # Get position gains
         n_str = ser.read_until(b'\n');  # get the incremented number back
         n_int = float(n_str) # turn it into an float
-        print('Kp: ' + str(n_int) + '\n') # print it to the screen
+        print('Kp_pos: ' + str(n_int) + '\n') # print it to the screen
+
+        n_str = ser.read_until(b'\n');  # get the incremented number back
+        n_int = float(n_str) # turn it into an float
+        print('Kd_pos: ' + str(n_int) + '\n') # print it to the screen
 
         n_str2 = ser.read_until(b'\n');  # get the incremented number back
         n_int2 = float(n_str2) # turn it into an float
-        print('Ki: ' + str(n_int2) + '\n') # print it to the screen
+        print('Ki_pos: ' + str(n_int2) + '\n') # print it to the screen
 
     elif (selection == 'k'): # Test current control
         print('Testing current controller!' + '\n')
@@ -102,8 +111,13 @@ while not has_quit:
         print('Done testing!' + '\n')
 
     elif (selection == 'l'): # Go to angle (deg)
-        print('Going to angle...' + '\n')
+        # First number
+        n_str = input('Enter angle: ') # get the number to send
+        n_int = float(n_str) # turn it into an float
+        ser.write((str(n_int)+'\n').encode()); # send the number to PIC
 
+        print('Going to angle...' + '\n')
+        read_plot_matrix()
         print('Reached desired angle!' + '\n')
 
     elif (selection == 'p'): # Unpower the motor

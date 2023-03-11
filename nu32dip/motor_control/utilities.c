@@ -34,7 +34,7 @@ void setup_motor_timers_pins()
     OC1CONbits.ON = 1;        // turn on OC1
     OC1CONbits.OCTSEL = 1;
 
-    // Set the control loop (Timer 2 interrupt) to 5kHz
+    // Set the CURRENT control loop (Timer 2 interrupt) to 5kHz
     T2CONbits.TCKPS = 0b000; // Timer2 prescaler
     PR2 = 9599;              // period
     TMR2 = 0;                // initial TMR2 count is 0
@@ -43,4 +43,17 @@ void setup_motor_timers_pins()
     IPC2bits.T2IS = 0;       // step 4: interrupt priority 1
     IFS0bits.T2IF = 0;       // step 5: clear the int flag
     IEC0bits.T2IE = 1;       // step 6: enable T2
+}
+
+void setup_position_controller_timer()
+{
+    // Set the Position control loop (Timer 4 interrupt) to 200Hz
+    T4CONbits.TCKPS = 0b100; // Timer4 prescaler 1:16
+    PR4 = PR4_PERIOD - 1;    // period
+    TMR4 = 0;                // initial TMR4 count is 0
+    T4CONbits.ON = 1;        // turn on Timer4
+    IPC4bits.T4IP = 5;       // step 4: interrupt priority 2
+    IPC4bits.T4IS = 1;       // step 4: interrupt priority 1
+    IFS0bits.T4IF = 0;       // step 5: clear the int flag
+    IEC0bits.T4IE = 1;       // step 6: enable T2
 }
