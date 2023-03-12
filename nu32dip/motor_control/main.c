@@ -350,6 +350,7 @@ int main()
         count = get_encoder_count(); // get the encoder value
 
         sprintf(buffer,"%d\r\n", count); // add two numbers and return
+        
         NU32DIP_WriteUART1(buffer);
         break;
       }

@@ -1,5 +1,15 @@
 {
     "files.associations": {
-        "system_error": "c"
+        "system_error": "c",
+        "stdio.h": "c",
+        "utilities.h": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "algorithm": "c",
+        "forward_list": "c",
+        "fstream": "c",
+        "ostream": "c",
+        "nu32dip.h": "c",
+        "encoder.h": "c"
     }
 }
